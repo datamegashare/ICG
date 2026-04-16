@@ -73,7 +73,7 @@
                 <div>
                     <div class="flex items-baseline gap-3">
                         <h1 class="text-xl font-bold tracking-tight">Control de Gestión Obra</h1>
-                        <span class="text-[9px] text-slate-500 font-mono bg-slate-800 px-2 py-0.5 rounded">v31</span>
+                        <span class="text-[9px] text-slate-500 font-mono bg-slate-800 px-2 py-0.5 rounded">v33</span>
                     </div>
                     <p id="display-filename" class="text-[10px] text-blue-400 font-mono tracking-widest uppercase">Cargue Archivo Base</p>
                 </div>
@@ -133,9 +133,22 @@
                         <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Proveedor</label>
                         <select id="filter-prov" onchange="runFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none"></select>
                     </div>
-                    <div class="space-y-1">
-                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Origen</label>
-                        <div id="origen-selector" class="flex flex-wrap gap-1 min-h-[32px] items-center"></div>
+                    <div class="space-y-1" style="position:relative">
+                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Origen <span id="origen-count" class="text-blue-400 normal-case font-bold"></span></label>
+                        <button id="origen-btn" onclick="toggleOrigenDropdown()"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-left focus:ring-2 focus:ring-blue-500 outline-none flex items-center justify-between"
+                            style="min-height:34px">
+                            <span id="origen-btn-label" class="text-slate-700">Todos</span>
+                            <svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div id="origen-dropdown"
+                            style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;background:white;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.10);max-height:220px;overflow-y:auto;margin-top:2px">
+                            <div style="padding:6px 8px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between">
+                                <button onclick="origenSelectAll()" style="font-size:10px;font-weight:700;color:#3b82f6;background:none;border:none;cursor:pointer;padding:0">Todos</button>
+                                <button onclick="origenSelectNone()" style="font-size:10px;font-weight:700;color:#94a3b8;background:none;border:none;cursor:pointer;padding:0">Ninguno</button>
+                            </div>
+                            <div id="origen-selector" style="padding:4px 0"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1778,22 +1791,69 @@
             originalOrigenes = [...new Set(rawData.map(d => d.origen))].sort();
             selectedOrigenes = new Set(originalOrigenes);
             renderOrigenes();
+            updateOrigenCount();
         }
 
         function renderOrigenes() {
-            document.getElementById('origen-selector').innerHTML = originalOrigenes.map(o => `
-                <button id="badge-${o}" onclick="toggleOrigen('${o}')" class="origen-badge ${selectedOrigenes.has(o) ? 'active' : ''} border px-3 py-1 rounded-lg text-[9px] font-bold">
-                    ${o}
-                </button>
-            `).join('');
+            const container = document.getElementById('origen-selector');
+            if (!container) return;
+            container.innerHTML = originalOrigenes.map(o => `
+                <label style="display:flex;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;font-size:11px;font-weight:600;color:#334155;transition:background .15s"
+                    onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">
+                    <input type="checkbox" value="${o}" ${selectedOrigenes.has(o) ? 'checked' : ''}
+                        onchange="toggleOrigen('${o}')"
+                        style="width:13px;height:13px;accent-color:#3b82f6;cursor:pointer;flex-shrink:0">
+                    <span style="text-transform:uppercase;letter-spacing:.03em">${o}</span>
+                </label>`).join('');
+            updateOrigenCount();
         }
 
         function toggleOrigen(o) {
             if (selectedOrigenes.has(o)) selectedOrigenes.delete(o);
             else selectedOrigenes.add(o);
-            document.getElementById(`badge-${o}`).classList.toggle('active');
+            updateOrigenCount();
             runFilters();
         }
+
+        function toggleOrigenDropdown() {
+            const dd = document.getElementById('origen-dropdown');
+            dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function origenSelectAll() {
+            selectedOrigenes = new Set(originalOrigenes);
+            renderOrigenes();
+            runFilters();
+        }
+
+        function origenSelectNone() {
+            selectedOrigenes = new Set();
+            renderOrigenes();
+            runFilters();
+        }
+
+        function updateOrigenCount() {
+            const total = originalOrigenes.length;
+            const sel   = selectedOrigenes.size;
+            const countEl = document.getElementById('origen-count');
+            const labelEl = document.getElementById('origen-btn-label');
+            if (countEl) countEl.innerText = sel === total ? '(todos)' : `(${sel}/${total})`;
+            if (labelEl) {
+                if (sel === total) labelEl.innerText = 'Todos';
+                else if (sel === 0) labelEl.innerText = 'Ninguno';
+                else if (sel <= 2) labelEl.innerText = Array.from(selectedOrigenes).join(', ');
+                else labelEl.innerText = `${sel} seleccionados`;
+            }
+        }
+
+        // Cerrar dropdown al hacer click afuera
+        document.addEventListener('click', (e) => {
+            const btn = document.getElementById('origen-btn');
+            const dd  = document.getElementById('origen-dropdown');
+            if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+                dd.style.display = 'none';
+            }
+        });
 
         function handleRangeInput() {
             const sMin = document.getElementById('slider-min');
@@ -1829,6 +1889,8 @@
             // Reset Orígenes
             selectedOrigenes = new Set(originalOrigenes);
             renderOrigenes();
+            const dd = document.getElementById('origen-dropdown');
+            if (dd) dd.style.display = 'none';
             
             // Reset Slider
             const sMin = document.getElementById('slider-min');
