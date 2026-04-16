@@ -73,7 +73,7 @@
                 <div>
                     <div class="flex items-baseline gap-3">
                         <h1 class="text-xl font-bold tracking-tight">Control de Gestión Obra</h1>
-                        <span class="text-[9px] text-slate-500 font-mono bg-slate-800 px-2 py-0.5 rounded">v24</span>
+                        <span class="text-[9px] text-slate-500 font-mono bg-slate-800 px-2 py-0.5 rounded">v31</span>
                     </div>
                     <p id="display-filename" class="text-[10px] text-blue-400 font-mono tracking-widest uppercase">Cargue Archivo Base</p>
                 </div>
@@ -112,72 +112,69 @@
             </div>
         </div>
 
-        <div id="dashboard-body" class="hidden space-y-6">
+        <div id="dashboard-body" class="hidden space-y-4">
             
             <!-- Proyecto y Filtros -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div class="card p-6 bg-slate-900 text-white flex flex-col justify-center">
-                    <span class="text-[10px] uppercase font-black text-blue-400 mb-1 tracking-widest">Proyecto Activo</span>
-                    <h2 id="meta-obra" class="text-2xl font-black truncate">---</h2>
-                </div>
-
-                <div class="lg:col-span-3 card p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rubro ICG</label>
-                        <select id="filter-rubro" onchange="runFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"></select>
+            <div class="card p-4 border border-slate-200">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
+                    <div class="bg-slate-900 text-white rounded-xl p-3 flex flex-col justify-center">
+                        <span class="text-[9px] uppercase font-black text-blue-400 mb-1 tracking-widest">Proyecto Activo</span>
+                        <h2 id="meta-obra" class="text-base font-black truncate">---</h2>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Centro de Costo</label>
-                        <select id="filter-cc" onchange="runFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"></select>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Rubro ICG</label>
+                        <select id="filter-rubro" onchange="runFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none"></select>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Proveedor</label>
-                        <select id="filter-prov" onchange="runFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"></select>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Centro de Costo</label>
+                        <select id="filter-cc" onchange="runFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none"></select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Proveedor</label>
+                        <select id="filter-prov" onchange="runFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none"></select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Origen</label>
+                        <div id="origen-selector" class="flex flex-wrap gap-1 min-h-[32px] items-center"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Selector de Rango Temporal Doble -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 card p-6 border-l-4 border-l-blue-600">
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="bg-blue-100 p-2 rounded-lg text-blue-600">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider">Rango de Meses Seleccionado</h4>
-                                <p id="period-status" class="text-[10px] text-blue-600 font-bold uppercase mt-0.5">Cargando periodos...</p>
-                            </div>
+            <!-- Selector de Rango Temporal -->
+            <div class="card p-4 border-l-4 border-l-blue-600">
+                <div class="flex flex-col md:flex-row items-center gap-4">
+                    <div class="flex items-center gap-2 shrink-0">
+                        <div class="bg-blue-100 p-1.5 rounded-lg text-blue-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
                         </div>
-                        <div class="flex items-center gap-3 bg-slate-900 px-5 py-2.5 rounded-xl shadow-inner">
-                            <span id="label-start" class="text-xs font-mono font-bold text-white">---</span>
-                            <span class="text-blue-400 text-xs font-black">❯</span>
-                            <span id="label-end" class="text-xs font-mono font-bold text-white">---</span>
+                        <div>
+                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Rango de Meses</p>
+                            <p id="period-status" class="text-[9px] text-blue-600 font-bold uppercase">Cargando...</p>
                         </div>
                     </div>
-                    
-                    <div class="slider-container px-2">
-                        <div class="slider-track"></div>
-                        <div id="slider-range-fill" class="slider-range"></div>
-                        <input type="range" id="slider-min" step="1" class="range-input" oninput="handleRangeInput()">
-                        <input type="range" id="slider-max" step="1" class="range-input" oninput="handleRangeInput()">
+                    <div class="flex-1 w-full">
+                        <div class="slider-container px-2">
+                            <div class="slider-track"></div>
+                            <div id="slider-range-fill" class="slider-range"></div>
+                            <input type="range" id="slider-min" step="1" class="range-input" oninput="handleRangeInput()">
+                            <input type="range" id="slider-max" step="1" class="range-input" oninput="handleRangeInput()">
+                        </div>
                     </div>
-                </div>
-
-                <div class="card p-6 flex flex-col justify-center">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Filtrar por Origen:</span>
-                    <div id="origen-selector" class="flex flex-wrap gap-2"></div>
+                    <div class="flex items-center gap-2 bg-slate-900 px-4 py-2 rounded-xl shrink-0">
+                        <span id="label-start" class="text-xs font-mono font-bold text-white">---</span>
+                        <span class="text-blue-400 text-xs font-black">❯</span>
+                        <span id="label-end" class="text-xs font-mono font-bold text-white">---</span>
+                    </div>
                 </div>
             </div>
 
             <!-- KPIs fila 1: Mes | Costo | Venta | Resultado -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <!-- M01: Mes actual de la obra -->
-                <div class="card p-6 stat-card border-slate-900 shadow-sm">
+                <div class="card p-4 stat-card border-slate-900 shadow-sm">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Mes de Obra</p>
                     <div class="flex items-baseline gap-2">
-                        <h3 id="kpi-mes-obra" class="text-4xl font-black text-slate-900">—</h3>
+                        <h3 id="kpi-mes-obra" class="text-2xl font-black text-slate-900">—</h3>
                         <span id="kpi-mes-obra-total" class="text-slate-400 font-bold text-sm"></span>
                     </div>
                     <div class="mt-2" id="kpi-mes-barra-wrap" style="display:none">
@@ -187,17 +184,27 @@
                     </div>
                     <p class="text-[10px] font-black text-slate-400 uppercase mt-2 mb-1">Período Filtrado</p>
                     <div class="flex items-baseline gap-2">
-                        <h3 id="kpi-meses-filtrados" class="text-2xl font-black text-slate-500">0</h3>
+                        <h3 id="kpi-meses-filtrados" class="text-lg font-black text-slate-500">0</h3>
                         <span class="text-slate-400 font-bold text-sm">/</span>
                         <span id="kpi-meses-total" class="text-slate-400 font-bold text-sm">0 total</span>
                     </div>
                 </div>
-                <div class="card p-6 stat-card border-blue-500 shadow-sm">
+                <div class="card p-4 stat-card border-blue-500 shadow-sm">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Costo Total Período</p>
-                    <h3 id="kpi-total" class="text-4xl font-black text-slate-900">$ 0 M</h3>
+                    <h3 id="kpi-total" class="text-2xl font-black text-slate-900">$ 0 M</h3>
+                    <div class="flex gap-4 mt-2 pt-2 border-t border-slate-100">
+                        <div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase">Movimientos</p>
+                            <p id="kpi-count" class="text-sm font-black text-slate-600">0</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase">Prom. Mensual</p>
+                            <p id="kpi-avg" class="text-sm font-black text-slate-600">$ 0 M</p>
+                        </div>
+                    </div>
                 </div>
                 <!-- M02: Avance Físico + Venta -->
-                <div class="card p-6 stat-card border-emerald-500 shadow-sm">
+                <div class="card p-4 stat-card border-emerald-500 shadow-sm">
                     <div class="flex justify-between items-start mb-1">
                         <p class="text-[10px] font-black text-slate-400 uppercase">Venta Total Período</p>
                         <!-- Semáforo M02 -->
@@ -206,7 +213,7 @@
                             <span id="kpi-avance-pct" class="text-[9px] font-black text-slate-600"></span>
                         </div>
                     </div>
-                    <h3 id="kpi-venta" class="text-4xl font-black text-emerald-600">$ 0 M</h3>
+                    <h3 id="kpi-venta" class="text-2xl font-black text-emerald-600">$ 0 M</h3>
                     <p class="text-[9px] text-slate-400 mt-1">Responde al selector de período</p>
                     <div id="kpi-avance-wrap" class="hidden mt-2 pt-2 border-t border-slate-100">
                         <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Avance Físico Acum.</p>
@@ -225,7 +232,7 @@
                     </div>
                 </div>
                 <!-- M03: Margen % + Resultado -->
-                <div class="card p-6 stat-card border-slate-400 shadow-sm">
+                <div class="card p-4 stat-card border-slate-400 shadow-sm">
                     <div class="flex justify-between items-start mb-1">
                         <p class="text-[10px] font-black text-slate-400 uppercase">Resultado (Venta−Costo)</p>
                         <div id="kpi-margen-badge" class="hidden items-center gap-1 px-2 py-0.5 rounded-full">
@@ -233,7 +240,7 @@
                             <span id="kpi-margen-pct" class="text-[10px] font-black"></span>
                         </div>
                     </div>
-                    <h3 id="kpi-resultado" class="text-4xl font-black text-slate-400">$ 0 M</h3>
+                    <h3 id="kpi-resultado" class="text-2xl font-black text-slate-400">$ 0 M</h3>
                     <div id="kpi-margen-wrap" class="hidden mt-2 pt-2 border-t border-slate-100">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-[9px] text-slate-400 uppercase font-black">% Margen Real Acum.</span>
@@ -256,142 +263,17 @@
 
             </div>
 
-            <!-- KPIs fila 2: control de carga -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="card p-5 border border-slate-200 shadow-sm">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Total Movimientos</p>
-                    <h3 id="kpi-count" class="text-3xl font-black text-slate-500">0</h3>
-                    <p class="text-[9px] text-slate-300 mt-1">Control de carga — aplica filtros del período</p>
-                </div>
-                <div class="card p-5 border border-slate-200 shadow-sm">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Promedio Mensual Costo</p>
-                    <h3 id="kpi-avg" class="text-3xl font-black text-slate-500">$ 0 M</h3>
-                    <p class="text-[9px] text-slate-300 mt-1">Control de carga — aplica filtros del período</p>
-                </div>
-            </div>
-
-            <!-- Gráficos -->
-            <div class="card p-8">
-                <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-6">Evolución Mensual ($M)</h4>
-                <div class="h-[350px]">
-                    <canvas id="chartTendencia"></canvas>
-                </div>
-            </div>
-
-            <!-- M04: Curva Avance Físico -->
-            <div id="chart-avance-wrap" class="hidden card p-8 border-l-4 border-l-emerald-500">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Curva de Avance Físico (%)</h4>
-                        <p id="chart-avance-subtitle" class="text-[9px] text-slate-400 mt-1">Promedio de disciplinas acumulado · Ppto Vig. vs Real</p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                            <span class="w-6 h-0.5 bg-slate-400 inline-block rounded" style="border-top: 2px dashed #94a3b8;height:0"></span>Ppto Vig.
-                        </span>
-                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                            <span class="w-6 h-0.5 bg-emerald-500 inline-block rounded"></span>Real
-                        </span>
-                    </div>
-                </div>
-                <div class="h-[300px]">
-                    <canvas id="chartAvance"></canvas>
-                </div>
-            </div>
-
-            <!-- M05: Curva Margen % -->
-            <div id="chart-margen-wrap" class="hidden card p-8 border-l-4 border-l-amber-400">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Evolución del Margen (%)</h4>
-                        <p id="chart-margen-subtitle" class="text-[9px] text-slate-400 mt-1">% Mg Real Acumulado mes a mes</p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                            <span class="w-6 h-0.5 bg-amber-400 inline-block rounded"></span>Mg Acum.
-                        </span>
-                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                            <span class="w-6 h-0.5 bg-slate-300 inline-block rounded" style="border-top:2px dashed #94a3b8;height:0"></span>Objetivo
-                        </span>
-                    </div>
-                </div>
-                <div class="h-[300px]">
-                    <canvas id="chartMargen"></canvas>
-                </div>
-            </div>
-
-            <!-- M06: HH Mensuales -->
-            <div id="chart-hh-wrap" class="hidden card p-8 border-l-4 border-l-violet-500">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Horas Hombre Mensuales (HH)</h4>
-                        <p id="chart-hh-subtitle" class="text-[9px] text-slate-400 mt-1">Ppto Vig. vs Real ejecutado</p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                            <span class="w-4 h-3 bg-violet-200 inline-block rounded-sm"></span>Ppto Vig.
-                        </span>
-                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                            <span class="w-4 h-3 bg-violet-600 inline-block rounded-sm"></span>Real
-                        </span>
-                    </div>
-                </div>
-                <div class="h-[300px]">
-                    <canvas id="chartHH"></canvas>
-                </div>
-            </div>
-
-            <!-- M07: Costo HH Vestida -->
-            <div id="chart-hhcosto-wrap" class="hidden card p-8 border-l-4 border-l-rose-400">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Costo HH Vestida Acumulado ($/HH)</h4>
-                        <p id="chart-hhcosto-subtitle" class="text-[9px] text-slate-400 mt-1">Ppto Vig. vs Real acumulado</p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                            <span class="w-6 h-0.5 bg-slate-300 inline-block rounded" style="border-top:2px dashed #94a3b8;height:0"></span>Ppto Vig.
-                        </span>
-                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                            <span class="w-6 h-0.5 bg-rose-500 inline-block rounded"></span>Real Acum.
-                        </span>
-                    </div>
-                </div>
-                <div class="h-[300px]">
-                    <canvas id="chartHHCosto"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfico Acumulado -->
-            <div class="card p-8 border-l-4 border-l-slate-700">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Curvas Acumuladas ($M)</h4>
-                        <p class="text-[9px] text-slate-400 mt-1">Costo acumulado responde a filtros · Venta acumulada sin filtros</p>
-                    </div>
-                    <div id="acum-legend" class="hidden flex items-center gap-4">
-                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                            <span class="w-6 h-0.5 bg-blue-500 inline-block rounded"></span>Costo Acum.
-                        </span>
-                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                            <span class="w-6 h-0.5 bg-emerald-500 inline-block rounded"></span>Venta Acum.
-                        </span>
-                    </div>
-                </div>
-                <div class="h-[350px]">
-                    <canvas id="chartAcumulado"></canvas>
-                </div>
-            </div>
+            
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="card p-8">
-                    <div class="flex justify-between items-center mb-6">
+                <div class="card p-5">
+                    <div class="flex justify-between items-center mb-4">
                         <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Distribución por Rubro (%)</h4>
-                        <span class="text-[9px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded">Basado en periodo seleccionado</span>
+                        <span class="text-[9px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded">Período seleccionado</span>
                     </div>
-                    <div class="h-[450px]">
-                        <canvas id="chartRubros"></canvas>
-                    </div>
+                    <canvas id="chartRubros" style="display:none"></canvas>
+                    <div id="donut-total" style="display:none"></div>
+                    <div id="donut-lista" style="display:flex;flex-direction:column;gap:6px"></div>
                 </div>
                 <div class="card p-8 flex flex-col">
                     <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-6">Resumen Económico</h4>
@@ -413,6 +295,131 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Gráficos — Par 1: Evolución + Avance Físico -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="card p-5">
+                <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Evolución Mensual ($M)</h4>
+                <div class="h-[280px]">
+                    <canvas id="chartTendencia"></canvas>
+                </div>
+            </div>
+
+            <!-- M04: Curva Avance Físico -->
+            <div id="chart-avance-wrap" class="hidden card p-5 border-l-4 border-l-emerald-500">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Curva de Avance Físico (%)</h4>
+                        <p id="chart-avance-subtitle" class="text-[9px] text-slate-400 mt-1">Promedio de disciplinas acumulado · Ppto Vig. vs Real</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                            <span class="w-6 h-0.5 bg-slate-400 inline-block rounded" style="border-top: 2px dashed #94a3b8;height:0"></span>Ppto Vig.
+                        </span>
+                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                            <span class="w-6 h-0.5 bg-emerald-500 inline-block rounded"></span>Real
+                        </span>
+                    </div>
+                </div>
+                <div class="h-[240px]">
+                    <canvas id="chartAvance"></canvas>
+                </div>
+            </div>
+
+            </div><!-- /grilla-par1 -->
+
+            <!-- Gráficos — Par 2: Margen % + HH Mensuales -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- M05: Curva Margen % -->
+            <div id="chart-margen-wrap" class="hidden card p-5 border-l-4 border-l-amber-400">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Evolución del Margen (%)</h4>
+                        <p id="chart-margen-subtitle" class="text-[9px] text-slate-400 mt-1">% Mg Real Acumulado mes a mes</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                            <span class="w-6 h-0.5 bg-amber-400 inline-block rounded"></span>Mg Acum.
+                        </span>
+                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                            <span class="w-6 h-0.5 bg-slate-300 inline-block rounded" style="border-top:2px dashed #94a3b8;height:0"></span>Objetivo
+                        </span>
+                    </div>
+                </div>
+                <div class="h-[240px]">
+                    <canvas id="chartMargen"></canvas>
+                </div>
+            </div>
+
+            <!-- M06: HH Mensuales -->
+            <div id="chart-hh-wrap" class="hidden card p-5 border-l-4 border-l-violet-500">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Horas Hombre Mensuales (HH)</h4>
+                        <p id="chart-hh-subtitle" class="text-[9px] text-slate-400 mt-1">Ppto Vig. vs Real ejecutado</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                            <span class="w-4 h-3 bg-violet-200 inline-block rounded-sm"></span>Ppto Vig.
+                        </span>
+                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                            <span class="w-4 h-3 bg-violet-600 inline-block rounded-sm"></span>Real
+                        </span>
+                    </div>
+                </div>
+                <div class="h-[240px]">
+                    <canvas id="chartHH"></canvas>
+                </div>
+            </div>
+
+            </div><!-- /grilla-par2 -->
+
+            <!-- Gráficos — Par 3: Costo HH + Curvas -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- M07: Costo HH Vestida -->
+            <div id="chart-hhcosto-wrap" class="hidden card p-5 border-l-4 border-l-rose-400">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Costo HH Vestida Acumulado ($/HH)</h4>
+                        <p id="chart-hhcosto-subtitle" class="text-[9px] text-slate-400 mt-1">Ppto Vig. vs Real acumulado</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                            <span class="w-6 h-0.5 bg-slate-300 inline-block rounded" style="border-top:2px dashed #94a3b8;height:0"></span>Ppto Vig.
+                        </span>
+                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                            <span class="w-6 h-0.5 bg-rose-500 inline-block rounded"></span>Real Acum.
+                        </span>
+                    </div>
+                </div>
+                <div class="h-[240px]">
+                    <canvas id="chartHHCosto"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico Acumulado -->
+            <div class="card p-5 border-l-4 border-l-slate-700">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Curvas Acumuladas ($M)</h4>
+                        <p class="text-[9px] text-slate-400 mt-1">Costo acumulado responde a filtros · Venta acumulada sin filtros</p>
+                    </div>
+                    <div id="acum-legend" class="hidden flex items-center gap-4">
+                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                            <span class="w-6 h-0.5 bg-blue-500 inline-block rounded"></span>Costo Acum.
+                        </span>
+                        <span class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                            <span class="w-6 h-0.5 bg-emerald-500 inline-block rounded"></span>Venta Acum.
+                        </span>
+                    </div>
+                </div>
+                <div class="h-[350px]">
+                    <canvas id="chartAcumulado"></canvas>
+                </div>
+            </div>
+
+            </div><!-- /grilla-par3 -->
+
             <!-- M08: Tabla HyS —  al fondo -->
             <div id="tabla-hys-wrap" class="hidden card p-8">
                 <div class="flex justify-between items-center mb-4">
@@ -485,9 +492,13 @@
                 hhMensual     = extractHHMensual(workbook);
                 hhCostoData   = extractHHCosto(workbook);
                 hysData       = extractHyS(workbook);
+                axiData       = extractAxI(workbook);
                 evaluarAlertaVenta(workbook);
 
                 processExcel(json, file.name);
+
+                // AxI Costos se suma directamente en los KPIs y tabla (sin inyectar en rawData)
+
                 document.getElementById('btn-reset').classList.remove('hidden');
                 document.getElementById('spinner').classList.add('hidden');
             };
@@ -537,6 +548,72 @@
         // Bloques "Ppto Vig." y "Real y Faltante Estim." -> "Costo HH Vestida Acum."
         // Extrae índices HyS desde DMens
         // Busca labels: Indice de Incidencia, Frecuencia, Gravedad, Índice de Capacitación
+        // Extrae AxI Ventas y AxI Costos desde hoja "3,1"
+        // Fila 4 (idx 3) = meses desde col 1; busca labels "AxI Ventas" y "AxI Costos"
+        // Retorna acumulados, último mes con dato, y mapa mes -> valor
+        function extractAxI(workbook) {
+            const empty = { costoMes: {}, ventaMes: {}, costoAcum: 0, ventaAcum: 0, costoUltimoMes: 0, ventaUltimoMes: 0 };
+            try {
+                const sheet = workbook.Sheets['3,1'];
+                if (!sheet) return empty;
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
+
+                // Período de reporte desde DMens
+                const sheetD = workbook.Sheets['DMens'];
+                if (!sheetD) return empty;
+                const rowsD = XLSX.utils.sheet_to_json(sheetD, { header: 1, defval: null });
+                const periodoRaw = rowsD[0] && rowsD[0][1];
+                if (!periodoRaw) return empty;
+                const periodoDate = parseFechaVTA(periodoRaw);
+                if (!periodoDate) return empty;
+
+                // Encontrar filas AxI
+                let rowVenta = null, rowCosto = null;
+                for (let r = 0; r < rows.length; r++) {
+                    const lbl = rows[r] && rows[r][0] ? String(rows[r][0]).trim() : '';
+                    if (lbl === 'AxI Ventas' && rowVenta === null) rowVenta = r;
+                    if (lbl === 'AxI Costos' && rowCosto === null) rowCosto = r;
+                }
+                if (rowVenta === null && rowCosto === null) return empty;
+
+                // Fila 4 (idx 3) = meses
+                const filaMeses = rows[3] || [];
+
+                const costoMes = {}, ventaMes = {};
+                let costoAcum = 0, ventaAcum = 0;
+                let costoUltimoMes = 0, ventaUltimoMes = 0;
+
+                for (let j = 1; j < filaMeses.length; j++) {
+                    const dt = parseFechaVTA(filaMeses[j]);
+                    if (!dt || dt.getUTCFullYear() < 1950) continue;
+                    // Solo meses <= período de reporte
+                    if (dt.getUTCFullYear() > periodoDate.getUTCFullYear() ||
+                       (dt.getUTCFullYear() === periodoDate.getUTCFullYear() &&
+                        dt.getUTCMonth()    >  periodoDate.getUTCMonth())) continue;
+
+                    const mesStr = dt.getUTCFullYear() + '-' + String(dt.getUTCMonth()+1).padStart(2,'0');
+
+                    if (rowCosto !== null) {
+                        const vc = parseFloat(rows[rowCosto] && rows[rowCosto][j]);
+                        if (!isNaN(vc) && vc !== 0) {
+                            costoMes[mesStr] = (costoMes[mesStr] || 0) + vc;
+                            costoAcum += vc;
+                            costoUltimoMes = vc;
+                        }
+                    }
+                    if (rowVenta !== null) {
+                        const vv = parseFloat(rows[rowVenta] && rows[rowVenta][j]);
+                        if (!isNaN(vv) && vv !== 0) {
+                            ventaMes[mesStr] = (ventaMes[mesStr] || 0) + vv;
+                            ventaAcum += vv;
+                            ventaUltimoMes = vv;
+                        }
+                    }
+                }
+                return { costoMes, ventaMes, costoAcum, ventaAcum, costoUltimoMes, ventaUltimoMes };
+            } catch(e) { return { costoMes: {}, ventaMes: {}, costoAcum: 0, ventaAcum: 0, costoUltimoMes: 0, ventaUltimoMes: 0 }; }
+        }
+
         function extractHyS(workbook) {
             const empty = { labels: [], incidencia: [], frecuencia: [], gravedad: [], capacitacion: [] };
             try {
@@ -846,6 +923,72 @@
         // Bloques "Ppto Vig." y "Real y Faltante Estim." -> "Costo HH Vestida Acum."
         // Extrae índices HyS desde DMens
         // Busca labels: Indice de Incidencia, Frecuencia, Gravedad, Índice de Capacitación
+        // Extrae AxI Ventas y AxI Costos desde hoja "3,1"
+        // Fila 4 (idx 3) = meses desde col 1; busca labels "AxI Ventas" y "AxI Costos"
+        // Retorna acumulados, último mes con dato, y mapa mes -> valor
+        function extractAxI(workbook) {
+            const empty = { costoMes: {}, ventaMes: {}, costoAcum: 0, ventaAcum: 0, costoUltimoMes: 0, ventaUltimoMes: 0 };
+            try {
+                const sheet = workbook.Sheets['3,1'];
+                if (!sheet) return empty;
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
+
+                // Período de reporte desde DMens
+                const sheetD = workbook.Sheets['DMens'];
+                if (!sheetD) return empty;
+                const rowsD = XLSX.utils.sheet_to_json(sheetD, { header: 1, defval: null });
+                const periodoRaw = rowsD[0] && rowsD[0][1];
+                if (!periodoRaw) return empty;
+                const periodoDate = parseFechaVTA(periodoRaw);
+                if (!periodoDate) return empty;
+
+                // Encontrar filas AxI
+                let rowVenta = null, rowCosto = null;
+                for (let r = 0; r < rows.length; r++) {
+                    const lbl = rows[r] && rows[r][0] ? String(rows[r][0]).trim() : '';
+                    if (lbl === 'AxI Ventas' && rowVenta === null) rowVenta = r;
+                    if (lbl === 'AxI Costos' && rowCosto === null) rowCosto = r;
+                }
+                if (rowVenta === null && rowCosto === null) return empty;
+
+                // Fila 4 (idx 3) = meses
+                const filaMeses = rows[3] || [];
+
+                const costoMes = {}, ventaMes = {};
+                let costoAcum = 0, ventaAcum = 0;
+                let costoUltimoMes = 0, ventaUltimoMes = 0;
+
+                for (let j = 1; j < filaMeses.length; j++) {
+                    const dt = parseFechaVTA(filaMeses[j]);
+                    if (!dt || dt.getUTCFullYear() < 1950) continue;
+                    // Solo meses <= período de reporte
+                    if (dt.getUTCFullYear() > periodoDate.getUTCFullYear() ||
+                       (dt.getUTCFullYear() === periodoDate.getUTCFullYear() &&
+                        dt.getUTCMonth()    >  periodoDate.getUTCMonth())) continue;
+
+                    const mesStr = dt.getUTCFullYear() + '-' + String(dt.getUTCMonth()+1).padStart(2,'0');
+
+                    if (rowCosto !== null) {
+                        const vc = parseFloat(rows[rowCosto] && rows[rowCosto][j]);
+                        if (!isNaN(vc) && vc !== 0) {
+                            costoMes[mesStr] = (costoMes[mesStr] || 0) + vc;
+                            costoAcum += vc;
+                            costoUltimoMes = vc;
+                        }
+                    }
+                    if (rowVenta !== null) {
+                        const vv = parseFloat(rows[rowVenta] && rows[rowVenta][j]);
+                        if (!isNaN(vv) && vv !== 0) {
+                            ventaMes[mesStr] = (ventaMes[mesStr] || 0) + vv;
+                            ventaAcum += vv;
+                            ventaUltimoMes = vv;
+                        }
+                    }
+                }
+                return { costoMes, ventaMes, costoAcum, ventaAcum, costoUltimoMes, ventaUltimoMes };
+            } catch(e) { return { costoMes: {}, ventaMes: {}, costoAcum: 0, ventaAcum: 0, costoUltimoMes: 0, ventaUltimoMes: 0 }; }
+        }
+
         function extractHyS(workbook) {
             const empty = { labels: [], incidencia: [], frecuencia: [], gravedad: [], capacitacion: [] };
             try {
@@ -1594,6 +1737,7 @@
                 .filter(d => d.rubro !== 'SIN RUBRO' && d.rubro !== 'VENTAS' && d.rubro !== 'MARGEN LINEAL');
 
             allMonths = [...new Set(rawData.map(d => d.mesStr))].sort();
+
             
             const sMin = document.getElementById('slider-min');
             const sMax = document.getElementById('slider-max');
@@ -1726,10 +1870,15 @@
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('dashboard-body').classList.remove('hidden');
 
-            const total = filteredGlobal.reduce((acc, c) => acc + c.monto, 0);
-            const totalM = Math.round(total / MILLION);
+            // Excluir AXI COSTOS del filteredGlobal (se suma aparte para evitar duplicado)
+            const filteredSinAxi = filteredGlobal.filter(d => d.rubro !== 'AXI COSTOS');
+            const total = filteredSinAxi.reduce((acc, c) => acc + c.monto, 0);
+            // Sumar AxI Costos del período activo siempre (independiente de filtros)
+            const axiCostoPeriodo = activeMonths.reduce((acc, m) => acc + (axiData.costoMes[m] || 0) * MILLION, 0);
+            const totalConAxi = total + axiCostoPeriodo;
+            const totalM = Math.round(totalConAxi / MILLION);
             const numMeses = activeMonths.length || 1;
-            const avgM = Math.round(total / MILLION / numMeses);
+            const avgM = Math.round(totalConAxi / MILLION / numMeses);
 
             // Actualizar KPIs incluyendo la nueva tarjeta de Mes
             document.getElementById('kpi-meses-filtrados').innerText = numMeses;
@@ -1752,11 +1901,13 @@
             document.getElementById('kpi-avg').innerText = `$ ${avgM.toLocaleString('es-AR')} M`;
 
             // Venta período: suma ventaData solo de los meses activos (responde al slider)
-            const ventaPeriodo = activeMonths.reduce((acc, m) => acc + (ventaData[m] || 0), 0);
+            // AxI Ventas: sumar mes a mes al período activo
+            const axiVentaPeriodo = activeMonths.reduce((acc, m) => acc + (axiData.ventaMes[m] || 0) * 1000000, 0);
+            const ventaPeriodo = activeMonths.reduce((acc, m) => acc + (ventaData[m] || 0), 0) + axiVentaPeriodo;
             // Resultado: Venta total obra - Costo total obra (sin filtros)
-            const ventaTotalObra = Object.values(ventaData).reduce((acc, v) => acc + v, 0);
-            const costoTotalObra = rawData.reduce((acc, c) => acc + c.monto, 0);
-            const resultado = ventaTotalObra - costoTotalObra;
+            // Resultado del período: Venta período (con AxI) - Costo período (con AxI)
+            const ventaTotalObra = ventaPeriodo;
+            const resultado = ventaPeriodo - totalConAxi;
             // M02: Avance Físico
             if (avanceData.real !== null) {
                 const real = avanceData.real, ppto = avanceData.ppto || 0;
@@ -1787,7 +1938,7 @@
                 document.getElementById('kpi-venta').innerText = `$ ${Math.round(ventaPeriodo / MILLION).toLocaleString('es-AR')} M`;
                 const resEl = document.getElementById('kpi-resultado');
                 resEl.innerText = `$ ${Math.round(resultado / MILLION).toLocaleString('es-AR')} M`;
-                resEl.className = `text-4xl font-black ${resultado >= 0 ? 'text-emerald-600' : 'text-red-500'}`;
+                resEl.className = `text-2xl font-black ${resultado >= 0 ? 'text-emerald-600' : 'text-red-500'}`;
             } else {
                 document.getElementById('kpi-venta').innerText = '—';
                 document.getElementById('kpi-resultado').innerText = '—';
@@ -1877,9 +2028,9 @@
             const ultimoMes = allMonths.length ? allMonths[allMonths.length - 1] : null;
 
             // ── Costos ────────────────────────────────────────────────────────
-            const costoAcumTotal  = rawData.reduce((acc, d) => acc + d.monto, 0);
+            const costoAcumTotal  = rawData.filter(d => d.rubro !== 'AXI COSTOS').reduce((acc, d) => acc + d.monto, 0);
             const costoUltimoTotal = ultimoMes
-                ? rawData.filter(d => d.mesStr === ultimoMes).reduce((acc, d) => acc + d.monto, 0)
+                ? rawData.filter(d => d.mesStr === ultimoMes && d.rubro !== 'AXI COSTOS').reduce((acc, d) => acc + d.monto, 0)
                 : 0;
 
             const costoAcumRubro  = {};
@@ -1891,13 +2042,21 @@
             }
 
             // ── Venta ─────────────────────────────────────────────────────────
-            const ventaAcum   = Object.values(ventaData).reduce((a, b) => a + b, 0);
-            const ventaUltimo = ventaData[ultimoMes] || 0;
+            const ventaBaseAcum   = Object.values(ventaData).reduce((a, b) => a + b, 0);
+            const ventaBaseUltimo = ventaData[ultimoMes] || 0;
+            const axiVentaAcum   = axiData.ventaAcum * 1000000;
+            const axiVentaUltimo = (axiData.ventaUltimoMes || 0) * 1000000;
+            const ventaAcum   = ventaBaseAcum + axiVentaAcum;
+            const ventaUltimo = ventaBaseUltimo + axiVentaUltimo;
             const hasVenta    = ventaAcum > 0;
 
+            // ── AxI Costos acumulado y último mes ─────────────────────────────
+            const axiCostoAcum   = axiData.costoAcum * 1000000;
+            const axiCostoUltimo = (axiData.costoUltimoMes || 0) * 1000000;
+
             // ── Contribución ──────────────────────────────────────────────────
-            const contribAcum   = ventaAcum   - costoAcumTotal;
-            const contribUltimo = ventaUltimo - costoUltimoTotal;
+            const contribAcum   = ventaAcum   - (costoAcumTotal + axiCostoAcum);
+            const contribUltimo = ventaUltimo - (costoUltimoTotal + axiCostoUltimo);
 
             // ── Helpers ───────────────────────────────────────────────────────
             const fmt = v => v === 0 ? '—' : '$ ' + Math.round(v / MILLION).toLocaleString('es-AR') + ' M';
@@ -1911,7 +2070,7 @@
             // Rubros presentes
             const rubrosPresentes = RUBROS_ORDEN.filter(r => (costoAcumRubro[r] || 0) > 0);
             const otrosRubros = Object.keys(costoAcumRubro)
-                .filter(r => !RUBROS_ORDEN.includes(r) && costoAcumRubro[r] > 0);
+                .filter(r => !RUBROS_ORDEN.includes(r) && costoAcumRubro[r] > 0 && r !== 'AXI COSTOS');
             const todosRubros = [...rubrosPresentes, ...otrosRubros];
 
             let html = '';
@@ -1919,14 +2078,29 @@
             // ── Fila VENTA (header) ───────────────────────────────────────────
             html += `
                 <tr class="bg-emerald-50 border-b border-emerald-100">
-                    <td class="py-2 pr-4 font-black text-[11px] text-emerald-700 uppercase tracking-wide" colspan="5">VENTA</td>
+                    <td class="py-1 pr-4 font-black text-[11px] text-emerald-700 uppercase tracking-wide" colspan="5">VENTA</td>
                 </tr>
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="py-2 pr-4 text-xs font-bold text-slate-700 pl-3">Total Venta</td>
-                    <td class="py-2 px-2 text-right text-xs font-bold text-slate-800 tabular-nums">${hasVenta ? fmt(ventaAcum) : '—'}</td>
-                    <td class="py-2 px-2 text-right text-[10px] text-slate-400">—</td>
-                    <td class="py-2 px-2 text-right text-xs font-bold text-slate-800 tabular-nums">${hasVenta ? fmt(ventaUltimo) : '—'}</td>
-                    <td class="py-2 pl-2 text-right text-[10px] text-slate-400">—</td>
+                    <td class="py-1 pr-4 text-xs text-slate-600 pl-3">Venta Contrato</td>
+                    <td class="py-1 px-2 text-right text-xs text-slate-600 tabular-nums">${hasVenta ? fmt(ventaBaseAcum) : '—'}</td>
+                    <td class="py-1 px-2 text-right text-[10px] text-slate-400">—</td>
+                    <td class="py-1 px-2 text-right text-xs text-slate-600 tabular-nums">${hasVenta ? fmt(ventaBaseUltimo) : '—'}</td>
+                    <td class="py-1 pl-2 text-right text-[10px] text-slate-400">—</td>
+                </tr>
+                ${axiVentaAcum > 0 ? `
+                <tr class="border-b border-slate-100 hover:bg-slate-50">
+                    <td class="py-1 pr-4 text-xs text-slate-600 pl-3">AxI Ventas</td>
+                    <td class="py-1 px-2 text-right text-xs text-slate-600 tabular-nums">${fmt(axiVentaAcum)}</td>
+                    <td class="py-1 px-2 text-right text-[10px] text-slate-400">—</td>
+                    <td class="py-1 px-2 text-right text-xs text-slate-600 tabular-nums">${axiVentaUltimo > 0 ? fmt(axiVentaUltimo) : '—'}</td>
+                    <td class="py-1 pl-2 text-right text-[10px] text-slate-400">—</td>
+                </tr>` : ''}
+                <tr class="border-b border-slate-100 hover:bg-slate-50">
+                    <td class="py-1 pr-4 text-xs font-bold text-slate-700 pl-3">Total Venta</td>
+                    <td class="py-1 px-2 text-right text-xs font-bold text-slate-800 tabular-nums">${hasVenta ? fmt(ventaAcum) : '—'}</td>
+                    <td class="py-1 px-2 text-right text-[10px] text-slate-400">—</td>
+                    <td class="py-1 px-2 text-right text-xs font-bold text-slate-800 tabular-nums">${hasVenta ? fmt(ventaUltimo) : '—'}</td>
+                    <td class="py-1 pl-2 text-right text-[10px] text-slate-400">—</td>
                 </tr>`;
 
             // ── Header COSTOS ─────────────────────────────────────────────────
@@ -1941,28 +2115,38 @@
                 const ultimo = costoUltimoRubro[rubro] || 0;
                 html += `
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="py-2 pr-4 text-xs text-slate-600 pl-3">${rubro}</td>
-                    <td class="py-2 px-2 text-right text-xs font-semibold text-slate-800 tabular-nums">${fmt(acum)}</td>
-                    <td class="py-2 px-2 text-right text-[10px] text-blue-500 tabular-nums">${fmtPct(acum, costoAcumTotal)}</td>
-                    <td class="py-2 px-2 text-right text-xs font-semibold text-slate-800 tabular-nums">${fmt(ultimo)}</td>
-                    <td class="py-2 pl-2 text-right text-[10px] text-blue-500 tabular-nums">${fmtPct(ultimo, costoUltimoTotal)}</td>
+                    <td class="py-1 pr-4 text-xs text-slate-600 pl-3">${rubro}</td>
+                    <td class="py-1 px-2 text-right text-xs font-semibold text-slate-800 tabular-nums">${fmt(acum)}</td>
+                    <td class="py-1 px-2 text-right text-[10px] text-blue-500 tabular-nums">${fmtPct(acum, costoAcumTotal)}</td>
+                    <td class="py-1 px-2 text-right text-xs font-semibold text-slate-800 tabular-nums">${fmt(ultimo)}</td>
+                    <td class="py-1 pl-2 text-right text-[10px] text-blue-500 tabular-nums">${fmtPct(ultimo, costoUltimoTotal)}</td>
                 </tr>`;
             }
 
-            // ── Total Costo ───────────────────────────────────────────────────
+            // ── Total Costo (con AxI) ─────────────────────────────────────────
+            const costoAcumConAxi   = costoAcumTotal + axiCostoAcum;
+            const costoUltimoConAxi = costoUltimoTotal + axiCostoUltimo;
             html += `
+                ${axiCostoAcum > 0 ? `
+                <tr class="border-b border-slate-100 hover:bg-slate-50">
+                    <td class="py-1 pr-4 text-xs text-slate-600 pl-3">AxI Costos</td>
+                    <td class="py-1 px-2 text-right text-xs text-slate-600 tabular-nums">${fmt(axiCostoAcum)}</td>
+                    <td class="py-1 px-2 text-right text-[10px] text-slate-400">${fmtPct(axiCostoAcum, costoAcumConAxi)}</td>
+                    <td class="py-1 px-2 text-right text-xs text-slate-600 tabular-nums">${axiCostoUltimo > 0 ? fmt(axiCostoUltimo) : '—'}</td>
+                    <td class="py-1 pl-2 text-right text-[10px] text-slate-400">${axiCostoUltimo > 0 ? fmtPct(axiCostoUltimo, costoUltimoConAxi) : '—'}</td>
+                </tr>` : ''}
                 <tr class="border-b-2 border-slate-300 bg-slate-50">
-                    <td class="py-2 pr-4 text-xs font-black text-slate-700 pl-3">Total Costo</td>
-                    <td class="py-2 px-2 text-right text-xs font-black text-slate-800 tabular-nums">${fmt(costoAcumTotal)}</td>
-                    <td class="py-2 px-2 text-right text-[10px] text-blue-500 tabular-nums">100.0%</td>
-                    <td class="py-2 px-2 text-right text-xs font-black text-slate-800 tabular-nums">${fmt(costoUltimoTotal)}</td>
-                    <td class="py-2 pl-2 text-right text-[10px] text-blue-500 tabular-nums">100.0%</td>
+                    <td class="py-1 pr-4 text-xs font-black text-slate-700 pl-3">Total Costo</td>
+                    <td class="py-1 px-2 text-right text-xs font-black text-slate-800 tabular-nums">${fmt(costoAcumConAxi)}</td>
+                    <td class="py-1 px-2 text-right text-[10px] text-blue-500 tabular-nums">100.0%</td>
+                    <td class="py-1 px-2 text-right text-xs font-black text-slate-800 tabular-nums">${fmt(costoUltimoConAxi)}</td>
+                    <td class="py-1 pl-2 text-right text-[10px] text-blue-500 tabular-nums">100.0%</td>
                 </tr>`;
 
             // ── Contribución ──────────────────────────────────────────────────
             html += `
                 <tr class="bg-slate-900">
-                    <td class="py-3 pr-4 text-xs font-black text-white pl-3">Contribución</td>
+                    <td class="py-2 pr-4 text-xs font-black text-white pl-3">Contribución</td>
                     <td class="py-3 px-2 text-right text-xs font-black tabular-nums ${colorContrib(contribAcum)}">${hasVenta ? fmt(contribAcum) : '—'}</td>
                     <td class="py-3 px-2 text-right text-[10px] tabular-nums text-slate-500">—</td>
                     <td class="py-3 px-2 text-right text-xs font-black tabular-nums ${colorContrib(contribUltimo)}">${hasVenta ? fmt(contribUltimo) : '—'}</td>
@@ -1975,26 +2159,27 @@
             html += `
                 <tr class="bg-slate-800 border-t border-slate-700">
                     <td class="py-2 pr-4 text-[10px] font-black text-slate-400 pl-3 uppercase tracking-wider">% Contribución / Venta</td>
-                    <td class="py-2 px-2 text-right text-xs font-black tabular-nums ${colorPctContrib(contribAcum)}">${pctContribAcum}</td>
-                    <td class="py-2 px-2 text-right text-[10px] text-slate-600">—</td>
-                    <td class="py-2 px-2 text-right text-xs font-black tabular-nums ${colorPctContrib(contribUltimo)}">${pctContribUltimo}</td>
-                    <td class="py-2 pl-2 text-right text-[10px] text-slate-600">—</td>
+                    <td class="py-1 px-2 text-right text-xs font-black tabular-nums ${colorPctContrib(contribAcum)}">${pctContribAcum}</td>
+                    <td class="py-1 px-2 text-right text-[10px] text-slate-600">—</td>
+                    <td class="py-1 px-2 text-right text-xs font-black tabular-nums ${colorPctContrib(contribUltimo)}">${pctContribUltimo}</td>
+                    <td class="py-1 pl-2 text-right text-[10px] text-slate-600">—</td>
                 </tr>`;
 
             tbody.innerHTML = html;
         }
 
         function refreshCharts(filteredGlobal, filteredRubroIndep, activeMonths) {
+            // Costo mensual + AxI Costos mes a mes
             const trendData = activeMonths.map(m => {
                 const sum = filteredGlobal.filter(d => d.mesStr === m).reduce((acc, c) => acc + c.monto, 0);
-                return sum / MILLION;
+                const axi = (axiData.costoMes[m] || 0) * MILLION;
+                return (sum + axi) / MILLION;
             });
 
-            // Dataset de VENTA para los meses activos
-
+            // Venta mensual + AxI Ventas mes a mes
             const ventaLine = activeMonths.map(m => {
-                const v = ventaData[m];
-                return (v !== undefined) ? v / MILLION : null;
+                const v = (ventaData[m] || 0) + (axiData.ventaMes[m] || 0) * MILLION;
+                return v > 0 ? v / MILLION : null;
             });
             const hasVenta = ventaLine.some(v => v !== null);
 
@@ -2049,34 +2234,50 @@
             }, {});
 
             if(charts.rubros) charts.rubros.destroy();
-            charts.rubros = new Chart(document.getElementById('chartRubros'), {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(rubroAgg),
-                    datasets: [{
-                        data: Object.values(rubroAgg),
-                        backgroundColor: ['#0f172a', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#a855f7']
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    cutout: '60%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9, weight: '600' } } },
-                        datalabels: {
-                            color: '#fff',
-                            font: { weight: 'bold', size: 10 },
-                            formatter: (value, ctx) => {
-                                let sum = 0;
-                                let dataArr = ctx.chart.data.datasets[0].data;
-                                dataArr.map(data => { sum += data; });
-                                let percentage = (value * 100 / sum).toFixed(1) + "%";
-                                return (value / sum > 0.1) ? percentage : null; 
-                            }
-                        }
-                    }
-                }
-            });
+
+            // ── Colores consistentes por rubro ────────────────────────────────
+            const RUBRO_COLORS = {
+                'PERSONAL':           '#3b82f6',
+                'EQUIPOS Y R':        '#f59e0b',
+                'MATERIALES':         '#10b981',
+                'SUBCONTRATOS':       '#ef4444',
+                'OTROS GASTOS':       '#8b5cf6',
+                'FLETES':             '#06b6d4',
+                'IMP. SEG Y FCIEROS': '#475569',
+                'AXI COSTOS':         '#f97316',
+            };
+            const DEFAULT_COLORS = ['#ec4899','#a855f7','#64748b','#84cc16','#14b8a6'];
+            const getColor = (rubro, idx) => RUBRO_COLORS[rubro] || DEFAULT_COLORS[idx % DEFAULT_COLORS.length];
+
+            const rubroLabels = Object.keys(rubroAgg);
+            const rubroValues = Object.values(rubroAgg);
+            const rubroColors = rubroLabels.map((r, i) => getColor(r, i));
+            const totalRubros = rubroValues.reduce((a, b) => a + b, 0);
+
+            // ── Barras horizontales — sin Chart.js ────────────────────────────
+            const listaEl = document.getElementById('donut-lista');
+            if (listaEl && totalRubros > 0) {
+                const sorted = rubroLabels
+                    .map((r, i) => ({ r, v: rubroValues[i], c: rubroColors[i] }))
+                    .filter(d => d.v > 0)
+                    .sort((a, b) => b.v - a.v);
+                const maxVal = sorted[0] ? sorted[0].v : 1;
+                listaEl.innerHTML = sorted.map(({ r, v, c }) => {
+                    const pct = (v / totalRubros * 100).toFixed(1);
+                    const barW = (v / maxVal * 100).toFixed(1);
+                    return `<div style="display:grid;grid-template-columns:140px 1fr 46px;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f1f5f9">
+                        <div style="display:flex;align-items:center;gap:8px;overflow:hidden">
+                            <div style="width:14px;height:14px;border-radius:3px;background:${c};flex-shrink:0"></div>
+                            <span style="font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r}</span>
+                        </div>
+                        <div style="background:#e2e8f0;border-radius:6px;height:32px;overflow:hidden">
+                            <div style="height:100%;width:${barW}%;background:${c};border-radius:6px;transition:width .5s ease"></div>
+                        </div>
+                        <span style="font-size:12px;font-weight:800;color:#0f172a;text-align:right">${pct}%</span>
+                    </div>`;
+                }).join('');
+            }
+
 
             const provAgg = filteredGlobal.reduce((acc, c) => {
                 acc[c.proveedor] = (acc[c.proveedor] || 0) + (c.monto / MILLION);
@@ -2089,14 +2290,15 @@
             let costoAcum = 0;
             const costoAcumData = activeMonths.map(m => {
                 const sum = filteredGlobal.filter(d => d.mesStr === m).reduce((acc, c) => acc + c.monto, 0);
-                costoAcum += sum;
+                const axi = (axiData.costoMes[m] || 0) * MILLION;
+                costoAcum += sum + axi;
                 return costoAcum / MILLION;
             });
 
-            // Venta acumulada: sin filtros (ventaData sin modificar)
+            // Venta acumulada: sin filtros + AxI Ventas mes a mes
             let ventaAcum = 0;
             const ventaAcumData = activeMonths.map(m => {
-                ventaAcum += (ventaData[m] || 0);
+                ventaAcum += (ventaData[m] || 0) + (axiData.ventaMes[m] || 0) * MILLION;
                 return ventaAcum / MILLION;
             });
             const hasVentaAcum = ventaAcumData.some(v => v > 0);
