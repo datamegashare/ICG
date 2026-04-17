@@ -73,7 +73,7 @@
                 <div>
                     <div class="flex items-baseline gap-3">
                         <h1 class="text-xl font-bold tracking-tight">Control de Gestión Obra</h1>
-                        <span class="text-[9px] text-slate-500 font-mono bg-slate-800 px-2 py-0.5 rounded">v33</span>
+                        <span class="text-[9px] text-slate-500 font-mono bg-slate-800 px-2 py-0.5 rounded">v34.1</span>
                     </div>
                     <p id="display-filename" class="text-[10px] text-blue-400 font-mono tracking-widest uppercase">Cargue Archivo Base</p>
                 </div>
@@ -482,38 +482,58 @@
             document.getElementById('spinner').classList.remove('hidden');
             const reader = new FileReader();
             reader.onload = (evt) => {
+                try {
                 const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array', cellDates: true });
+
+                console.log('[ICG] Hojas encontradas:', workbook.SheetNames);
 
                 // Buscar hoja "Base" (case-insensitive), o usar la primera si no existe
                 const sheetName = workbook.SheetNames.find(n => n.trim().toLowerCase() === 'base') || workbook.SheetNames[0];
+                console.log('[ICG] Hoja Base seleccionada:', sheetName);
                 const sheet = workbook.Sheets[sheetName];
+                console.log('[ICG] sheet objeto:', !!sheet);
 
                 // Leer desde fila 3 (header en fila 3 = row index 2) y columnas A:AH
+                // Limitar rango a A:AH para evitar columnas basura que cuelgan el parser
+                const originalRef = sheet['!ref'];
+                if (originalRef) {
+                    const refMatch = originalRef.match(/^[A-Z]+(\d+):[A-Z]+(\d+)$/);
+                    if (refMatch) {
+                        sheet['!ref'] = `A1:AH${refMatch[2]}`;
+                    }
+                }
+                console.log('[ICG] Leyendo JSON de hoja Base (ref limitado a AH)...');
                 const json = XLSX.utils.sheet_to_json(sheet, {
                     defval: "",
-                    range: 2,           // header en fila 3 (0-indexed = 2)
+                    range: 2,
                     header: 0
                 });
+                console.log('[ICG] JSON filas:', json.length, '| Cols:', Object.keys(json[0]||{}).join(', '));
 
                 // Leer datos de VENTA desde hoja 2-TC + VTA
-                ventaData = extractVentaData(workbook);
-                mesData    = extractMesData(workbook);
-                avanceData = extractAvanceData(workbook);
-                avanceMensual = extractAvanceMensual(workbook);
-                margenData    = extractMargenData(workbook);
-                margenMensual = extractMargenMensual(workbook);
-                hhMensual     = extractHHMensual(workbook);
-                hhCostoData   = extractHHCosto(workbook);
-                hysData       = extractHyS(workbook);
-                axiData       = extractAxI(workbook);
-                evaluarAlertaVenta(workbook);
-
-                processExcel(json, file.name);
+                console.log('[ICG] extractVentaData...'); ventaData = extractVentaData(workbook);
+                console.log('[ICG] extractMesData...'); mesData    = extractMesData(workbook);
+                console.log('[ICG] extractAvanceData...'); avanceData = extractAvanceData(workbook);
+                console.log('[ICG] extractAvanceMensual...'); avanceMensual = extractAvanceMensual(workbook);
+                console.log('[ICG] extractMargenData...'); margenData    = extractMargenData(workbook);
+                console.log('[ICG] extractMargenMensual...'); margenMensual = extractMargenMensual(workbook);
+                console.log('[ICG] extractHHMensual...'); hhMensual     = extractHHMensual(workbook);
+                console.log('[ICG] extractHHCosto...'); hhCostoData   = extractHHCosto(workbook);
+                console.log('[ICG] extractHyS...'); hysData       = extractHyS(workbook);
+                console.log('[ICG] extractAxI...'); axiData       = extractAxI(workbook);
+                console.log('[ICG] evaluarAlertaVenta...'); evaluarAlertaVenta(workbook);
+                console.log('[ICG] processExcel...'); processExcel(json, file.name);
+                console.log('[ICG] Carga completa.');
 
                 // AxI Costos se suma directamente en los KPIs y tabla (sin inyectar en rawData)
 
                 document.getElementById('btn-reset').classList.remove('hidden');
-                document.getElementById('spinner').classList.add('hidden');
+                } catch(err) {
+                    console.error('[ICG] ERROR en carga:', err);
+                    alert('Error al procesar el archivo: ' + err.message);
+                } finally {
+                    document.getElementById('spinner').classList.add('hidden');
+                }
             };
             reader.readAsArrayBuffer(file);
         });
@@ -555,390 +575,6 @@
         // Extrae curva de margen % mensual y acumulado desde DMens
         // F52 = % Mg Real [Acum.], F55 = % Mg Real + Ajust. [Mes]
         // Objetivo = Cont. Marginal Ppto Vig. % de 2-TC (col C)
-        // Extrae HH mensuales Ppto Vig. vs Real desde DMens
-        // Busca bloques "Ppto Vig." y "Real y Faltante Estim." -> "Total HH [Mes]"
-        // Extrae Costo HH Vestida Acumulado (Ppto Vig. vs Real) desde DMens
-        // Bloques "Ppto Vig." y "Real y Faltante Estim." -> "Costo HH Vestida Acum."
-        // Extrae índices HyS desde DMens
-        // Busca labels: Indice de Incidencia, Frecuencia, Gravedad, Índice de Capacitación
-        // Extrae AxI Ventas y AxI Costos desde hoja "3,1"
-        // Fila 4 (idx 3) = meses desde col 1; busca labels "AxI Ventas" y "AxI Costos"
-        // Retorna acumulados, último mes con dato, y mapa mes -> valor
-        function extractAxI(workbook) {
-            const empty = { costoMes: {}, ventaMes: {}, costoAcum: 0, ventaAcum: 0, costoUltimoMes: 0, ventaUltimoMes: 0 };
-            try {
-                const sheet = workbook.Sheets['3,1'];
-                if (!sheet) return empty;
-                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
-
-                // Período de reporte desde DMens
-                const sheetD = workbook.Sheets['DMens'];
-                if (!sheetD) return empty;
-                const rowsD = XLSX.utils.sheet_to_json(sheetD, { header: 1, defval: null });
-                const periodoRaw = rowsD[0] && rowsD[0][1];
-                if (!periodoRaw) return empty;
-                const periodoDate = parseFechaVTA(periodoRaw);
-                if (!periodoDate) return empty;
-
-                // Encontrar filas AxI
-                let rowVenta = null, rowCosto = null;
-                for (let r = 0; r < rows.length; r++) {
-                    const lbl = rows[r] && rows[r][0] ? String(rows[r][0]).trim() : '';
-                    if (lbl === 'AxI Ventas' && rowVenta === null) rowVenta = r;
-                    if (lbl === 'AxI Costos' && rowCosto === null) rowCosto = r;
-                }
-                if (rowVenta === null && rowCosto === null) return empty;
-
-                // Fila 4 (idx 3) = meses
-                const filaMeses = rows[3] || [];
-
-                const costoMes = {}, ventaMes = {};
-                let costoAcum = 0, ventaAcum = 0;
-                let costoUltimoMes = 0, ventaUltimoMes = 0;
-
-                for (let j = 1; j < filaMeses.length; j++) {
-                    const dt = parseFechaVTA(filaMeses[j]);
-                    if (!dt || dt.getUTCFullYear() < 1950) continue;
-                    // Solo meses <= período de reporte
-                    if (dt.getUTCFullYear() > periodoDate.getUTCFullYear() ||
-                       (dt.getUTCFullYear() === periodoDate.getUTCFullYear() &&
-                        dt.getUTCMonth()    >  periodoDate.getUTCMonth())) continue;
-
-                    const mesStr = dt.getUTCFullYear() + '-' + String(dt.getUTCMonth()+1).padStart(2,'0');
-
-                    if (rowCosto !== null) {
-                        const vc = parseFloat(rows[rowCosto] && rows[rowCosto][j]);
-                        if (!isNaN(vc) && vc !== 0) {
-                            costoMes[mesStr] = (costoMes[mesStr] || 0) + vc;
-                            costoAcum += vc;
-                            costoUltimoMes = vc;
-                        }
-                    }
-                    if (rowVenta !== null) {
-                        const vv = parseFloat(rows[rowVenta] && rows[rowVenta][j]);
-                        if (!isNaN(vv) && vv !== 0) {
-                            ventaMes[mesStr] = (ventaMes[mesStr] || 0) + vv;
-                            ventaAcum += vv;
-                            ventaUltimoMes = vv;
-                        }
-                    }
-                }
-                return { costoMes, ventaMes, costoAcum, ventaAcum, costoUltimoMes, ventaUltimoMes };
-            } catch(e) { return { costoMes: {}, ventaMes: {}, costoAcum: 0, ventaAcum: 0, costoUltimoMes: 0, ventaUltimoMes: 0 }; }
-        }
-
-        function extractHyS(workbook) {
-            const empty = { labels: [], incidencia: [], frecuencia: [], gravedad: [], capacitacion: [] };
-            try {
-                const sheet = workbook.Sheets['DMens'];
-                if (!sheet) return empty;
-                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
-
-                const periodoRaw = rows[0] && rows[0][1];
-                if (!periodoRaw) return empty;
-                const periodoDate = parseFechaVTA(periodoRaw);
-                if (!periodoDate) return empty;
-
-                const filaMeses = rows[2] || [];
-                const colsFecha = [];
-                for (let c = 1; c < filaMeses.length; c++) {
-                    const dt = parseFechaVTA(filaMeses[c]);
-                    if (!dt || dt.getUTCFullYear() < 1950) continue;
-                    if (dt.getUTCFullYear() > periodoDate.getUTCFullYear() ||
-                       (dt.getUTCFullYear() === periodoDate.getUTCFullYear() &&
-                        dt.getUTCMonth()    >  periodoDate.getUTCMonth())) continue;
-                    colsFecha.push({ c, dt });
-                }
-
-                // Buscar filas por label (en las filas 290-310)
-                let rowInc = null, rowFrq = null, rowGrv = null, rowCap = null;
-                for (let r = 285; r < Math.min(rows.length, 315); r++) {
-                    const label = rows[r] && rows[r][0] ? String(rows[r][0]).trim() : '';
-                    if (label === 'Indice de Incidencia'   && rowInc === null) rowInc = r;
-                    if (label === 'Indice de Frecuencia'   && rowFrq === null) rowFrq = r;
-                    if (label === 'Indice de Gravedad'     && rowGrv === null) rowGrv = r;
-                    if (label === 'Índice de Capacitación' && rowCap === null) rowCap = r;
-                }
-                if (rowInc === null) return empty;
-
-                const labels = [], incidencia = [], frecuencia = [], gravedad = [], capacitacion = [];
-                for (const { c, dt } of colsFecha) {
-                    const vi = parseFloat(rows[rowInc] && rows[rowInc][c]);
-                    const vf = rowFrq !== null ? parseFloat(rows[rowFrq] && rows[rowFrq][c]) : NaN;
-                    const vg = rowGrv !== null ? parseFloat(rows[rowGrv] && rows[rowGrv][c]) : NaN;
-                    const vc = rowCap !== null ? parseFloat(rows[rowCap] && rows[rowCap][c]) : NaN;
-                    if (isNaN(vi) || vi === 0) continue;
-                    const mes = dt.getUTCFullYear() + '-' + String(dt.getUTCMonth()+1).padStart(2,'0');
-                    labels.push(mes);
-                    incidencia.push(parseFloat(vi.toFixed(2)));
-                    frecuencia.push(!isNaN(vf) ? parseFloat(vf.toFixed(2)) : null);
-                    gravedad.push(!isNaN(vg) ? parseFloat(vg.toFixed(3)) : null);
-                    capacitacion.push(!isNaN(vc) && vc > 0 ? parseFloat(vc.toFixed(2)) : null);
-                }
-                return { labels, incidencia, frecuencia, gravedad, capacitacion };
-            } catch(e) { return empty; }
-        }
-
-        function extractHHCosto(workbook) {
-            const empty = { labels: [], pptoMes: [], realMes: [], pptoAcum: [], realAcum: [] };
-            try {
-                const sheet = workbook.Sheets['DMens'];
-                if (!sheet) return empty;
-                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
-
-                const periodoRaw = rows[0] && rows[0][1];
-                if (!periodoRaw) return empty;
-                const periodoDate = parseFechaVTA(periodoRaw);
-                if (!periodoDate) return empty;
-
-                const filaMeses = rows[2] || [];
-                const colsFecha = [];
-                for (let c = 1; c < filaMeses.length; c++) {
-                    const dt = parseFechaVTA(filaMeses[c]);
-                    if (!dt || dt.getUTCFullYear() < 1950) continue;
-                    if (dt.getUTCFullYear() > periodoDate.getUTCFullYear() ||
-                       (dt.getUTCFullYear() === periodoDate.getUTCFullYear() &&
-                        dt.getUTCMonth()    >  periodoDate.getUTCMonth())) continue;
-                    colsFecha.push({ c, dt });
-                }
-
-                // Buscar filas por bloque
-                let rowPptoMes = null, rowPptoAcum = null;
-                let rowRealMes = null, rowRealAcum = null;
-                let bloque = null;
-                for (let r = 133; r < Math.min(rows.length, 150); r++) {
-                    const label = rows[r] && rows[r][0] ? String(rows[r][0]).trim() : '';
-                    if (["Ppto Vig.", "Real y Faltante Estim."].includes(label)) { bloque = label; continue; }
-                    if (label === 'Costo HH Vestida [mes]') {
-                        if (bloque === 'Ppto Vig.'              && rowPptoMes  === null) rowPptoMes  = r;
-                        if (bloque === 'Real y Faltante Estim.' && rowRealMes  === null) rowRealMes  = r;
-                    }
-                    if (label === 'Costo HH Vestida Acum.') {
-                        if (bloque === 'Ppto Vig.'              && rowPptoAcum === null) rowPptoAcum = r;
-                        if (bloque === 'Real y Faltante Estim.' && rowRealAcum === null) rowRealAcum = r;
-                    }
-                }
-                if (rowPptoAcum === null || rowRealAcum === null) return empty;
-
-                const labels = [], pptoMes = [], realMes = [], pptoAcum = [], realAcum = [];
-                for (const { c, dt } of colsFecha) {
-                    const vpa = parseFloat(rows[rowPptoAcum] && rows[rowPptoAcum][c]) || 0;
-                    const vra = parseFloat(rows[rowRealAcum] && rows[rowRealAcum][c]) || 0;
-                    if (vpa === 0 && vra === 0) continue;
-                    const mes = dt.getUTCFullYear() + '-' + String(dt.getUTCMonth()+1).padStart(2,'0');
-                    labels.push(mes);
-                    pptoAcum.push(vpa || null);
-                    realAcum.push(vra || null);
-                    pptoMes.push(rowPptoMes !== null ? (parseFloat(rows[rowPptoMes] && rows[rowPptoMes][c]) || null) : null);
-                    realMes.push(rowRealMes !== null ? (parseFloat(rows[rowRealMes] && rows[rowRealMes][c]) || null) : null);
-                }
-                return { labels, pptoMes, realMes, pptoAcum, realAcum };
-            } catch(e) { return empty; }
-        }
-
-        function extractHHMensual(workbook) {
-            const empty = { labels: [], ppto: [], real: [] };
-            try {
-                const sheet = workbook.Sheets['DMens'];
-                if (!sheet) return empty;
-                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
-
-                const periodoRaw = rows[0] && rows[0][1];
-                if (!periodoRaw) return empty;
-                const periodoDate = parseFechaVTA(periodoRaw);
-                if (!periodoDate) return empty;
-
-                // Todos los meses <= período
-                const filaMeses = rows[2] || [];
-                const colsFecha = [];
-                for (let c = 1; c < filaMeses.length; c++) {
-                    const dt = parseFechaVTA(filaMeses[c]);
-                    if (!dt || dt.getUTCFullYear() < 1950) continue;
-                    if (dt.getUTCFullYear() > periodoDate.getUTCFullYear() ||
-                       (dt.getUTCFullYear() === periodoDate.getUTCFullYear() &&
-                        dt.getUTCMonth()    >  periodoDate.getUTCMonth())) continue;
-                    colsFecha.push({ c, dt });
-                }
-
-                // Buscar bloques por label
-                let rowPpto = null, rowReal = null;
-                let bloque = null;
-                for (let r = 83; r < Math.min(rows.length, 120); r++) {
-                    const label = rows[r] && rows[r][0] ? String(rows[r][0]).trim() : '';
-                    if (["Ppto Vig.", "Real y Faltante Estim."].includes(label)) bloque = label;
-                    if (label === 'Total HH [Mes]') {
-                        if (bloque === 'Ppto Vig.'              && rowPpto === null) rowPpto = r;
-                        if (bloque === 'Real y Faltante Estim.' && rowReal === null) rowReal = r;
-                    }
-                }
-                if (rowPpto === null || rowReal === null) return empty;
-
-                const labels = [], ppto = [], real = [];
-                for (const { c, dt } of colsFecha) {
-                    const vp = parseFloat(rows[rowPpto] && rows[rowPpto][c]) || 0;
-                    const vr = parseFloat(rows[rowReal] && rows[rowReal][c]) || 0;
-                    if (vp === 0 && vr === 0) continue;
-                    const mes = dt.getUTCFullYear() + '-' + String(dt.getUTCMonth()+1).padStart(2,'0');
-                    labels.push(mes);
-                    ppto.push(vp || null);
-                    real.push(vr || null);
-                }
-                return { labels, ppto, real };
-            } catch(e) { return empty; }
-        }
-
-        function extractMargenMensual(workbook) {
-            const empty = { labels: [], acum: [], mes: [], objetivo: null };
-            try {
-                const sheet = workbook.Sheets['DMens'];
-                if (!sheet) return empty;
-                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
-
-                // Período de reporte
-                const periodoRaw = rows[0] && rows[0][1];
-                if (!periodoRaw) return empty;
-                const periodoDate = parseFechaVTA(periodoRaw);
-                if (!periodoDate) return empty;
-
-                // Columnas ejecutadas (fecha <= período)
-                const filaMeses = rows[2] || [];
-                const colsFecha = [];
-                for (let c = 1; c < filaMeses.length; c++) {
-                    const dt = parseFechaVTA(filaMeses[c]);
-                    if (!dt || dt.getUTCFullYear() < 1950) continue;
-                    if (dt.getUTCFullYear() > periodoDate.getUTCFullYear() ||
-                       (dt.getUTCFullYear() === periodoDate.getUTCFullYear() &&
-                        dt.getUTCMonth()    >  periodoDate.getUTCMonth())) continue;
-                    colsFecha.push({ c, dt });
-                }
-
-                // Buscar filas por label
-                let rowAcum = null, rowMes = null;
-                for (let r = 45; r < Math.min(rows.length, 85); r++) {
-                    const label  = rows[r]   && rows[r][0]   ? String(rows[r][0]).trim()   : '';
-                    const prev   = rows[r-1] && rows[r-1][0] ? String(rows[r-1][0]).trim() : '';
-                    // F52: % debajo de Mg Real [Acum.]
-                    if (label === '%' && prev === 'Mg Real [Acum.]' && rowAcum === null)
-                        rowAcum = r;
-                    // F55: % debajo de Mg Real + Ajust. [Mes]
-                    if (label === '%' && prev.includes('Mg Real + Ajust. [Mes]') && rowMes === null)
-                        rowMes = r;
-                }
-                if (rowAcum === null) return empty;
-
-                // Margen objetivo desde 2-TC
-                let objetivo = null;
-                const sheetTC = workbook.Sheets['2 - TC'];
-                if (sheetTC) {
-                    const tcRows = XLSX.utils.sheet_to_json(sheetTC, { header: 1, defval: null });
-                    let foundPpto = false;
-                    for (const row of tcRows) {
-                        const lbl = row[0] ? String(row[0]).trim().toLowerCase() : '';
-                        if (!foundPpto && lbl.includes('cont. marginal')) { foundPpto = true; continue; }
-                        if (foundPpto && lbl === '%') {
-                            const v = parseFloat(row[2]);
-                            if (!isNaN(v)) { objetivo = v * 100; break; }
-                        }
-                    }
-                }
-
-                const labels = [], acum = [], mes = [];
-                for (const { c, dt } of colsFecha) {
-                    const va = rows[rowAcum] && rows[rowAcum][c];
-                    const vm = rowMes !== null && rows[rowMes] && rows[rowMes][c];
-                    const fa = parseFloat(va), fm = parseFloat(vm);
-                    if (isNaN(fa) || fa === 0) continue;
-                    const label = dt.getUTCFullYear() + '-' + String(dt.getUTCMonth()+1).padStart(2,'0');
-                    labels.push(label);
-                    acum.push(fa * 100);
-                    mes.push(!isNaN(fm) && fm !== 0 ? fm * 100 : null);
-                }
-                return { labels, acum, mes, objetivo };
-            } catch(e) { return empty; }
-        }
-
-        function extractMargenData(workbook) {
-            const empty = { acum: null, mes: null, oferta: null };
-            try {
-                // Margen de Oferta desde 2-TC fila 5 (idx 4), col F (idx 5)
-                const sheetTC = workbook.Sheets['2 - TC'];
-                if (!sheetTC) return empty;
-                const tcRows = XLSX.utils.sheet_to_json(sheetTC, { header: 1, defval: null });
-                let oferta = null;
-                const cellF5 = tcRows[4] && tcRows[4][5];
-                if (cellF5 !== null && !isNaN(parseFloat(cellF5))) {
-                    oferta = parseFloat(cellF5);
-                }
-
-                // Mg Lineal desde DMens
-                const sheetDM = workbook.Sheets['DMens'];
-                if (!sheetDM) return { acum: null, mes: null, oferta };
-                const dmRows = XLSX.utils.sheet_to_json(sheetDM, { header: 1, defval: null });
-
-                // Col del mes actual
-                const periodoRaw = dmRows[0] && dmRows[0][1];
-                const periodoDate = parseFechaVTA(periodoRaw);
-                if (!periodoDate) return { acum: null, mes: null, oferta };
-                let colActual = null;
-                const filaMeses = dmRows[2] || [];
-                for (let c = 1; c < filaMeses.length; c++) {
-                    const dt = parseFechaVTA(filaMeses[c]);
-                    if (dt && dt.getUTCFullYear() === periodoDate.getUTCFullYear()
-                           && dt.getUTCMonth()    === periodoDate.getUTCMonth()) {
-                        colActual = c; break;
-                    }
-                }
-                if (colActual === null) return { acum: null, mes: null, oferta };
-
-                // Buscar filas por label
-                let rowMgLinealMes = null, rowMgLinealAcum = null;
-                let foundMgLinealReal = false;
-                for (let r = 45; r < Math.min(dmRows.length, 85); r++) {
-                    const label = dmRows[r] && dmRows[r][0] ? String(dmRows[r][0]).trim() : '';
-                    if (label === 'Mg Lineal Real') foundMgLinealReal = true;
-                    if (foundMgLinealReal && label === '%' && rowMgLinealMes === null) {
-                        rowMgLinealMes = r;
-                    }
-                    if (label === 'Mg Lineal Real Acum.') {
-                        rowMgLinealAcum = r + 1;  // fila siguiente es el %
-                        break;
-                    }
-                }
-
-                // Helper: último valor no-cero hacia atrás
-                const lastVal = (rowIdx) => {
-                    if (rowIdx === null) return null;
-                    for (let c = colActual; c >= 1; c--) {
-                        const v = dmRows[rowIdx] && dmRows[rowIdx][c];
-                        if (v !== null && v !== undefined && !isNaN(parseFloat(v)) && parseFloat(v) !== 0)
-                            return parseFloat(v);
-                    }
-                    return null;
-                };
-
-                return {
-                    acum:   lastVal(rowMgLinealAcum),
-                    mes:    lastVal(rowMgLinealMes),
-                    oferta: oferta
-                };
-            } catch(e) { return empty; }
-        }
-
-        // Lee % Margen real (Contribución/Venta) y objetivo desde 2-TC
-        // Fila "%" debajo de "Contribución" -> col C = Gestión C+AEC = margen real acumulado
-        // Fila "%" debajo de "Cont. Marginal Últ. Ppto. Vig." -> col C = margen objetivo
-        // Extrae curva de margen % mensual y acumulado desde DMens
-        // F52 = % Mg Real [Acum.], F55 = % Mg Real + Ajust. [Mes]
-        // Objetivo = Cont. Marginal Ppto Vig. % de 2-TC (col C)
-        // Extrae HH mensuales Ppto Vig. vs Real desde DMens
-        // Busca bloques "Ppto Vig." y "Real y Faltante Estim." -> "Total HH [Mes]"
-        // Extrae Costo HH Vestida Acumulado (Ppto Vig. vs Real) desde DMens
-        // Bloques "Ppto Vig." y "Real y Faltante Estim." -> "Costo HH Vestida Acum."
-        // Extrae índices HyS desde DMens
-        // Busca labels: Indice de Incidencia, Frecuencia, Gravedad, Índice de Capacitación
-        // Extrae AxI Ventas y AxI Costos desde hoja "3,1"
-        // Fila 4 (idx 3) = meses desde col 1; busca labels "AxI Ventas" y "AxI Costos"
-        // Retorna acumulados, último mes con dato, y mapa mes -> valor
         function extractAxI(workbook) {
             const empty = { costoMes: {}, ventaMes: {}, costoAcum: 0, ventaAcum: 0, costoUltimoMes: 0, ventaUltimoMes: 0 };
             try {
@@ -1501,6 +1137,8 @@
                     return _venta_1320(vtaRows);
                 } else if (codigoObra === '1323' || codigoObra === '1323-3') {
                     return _venta_1323(vtaRows);
+                } else if (codigoObra === '1329' || codigoObra === '1329-2') {
+                    return _venta_1329(workbook);
                 } else {
                     // Obra no mapeada: retornar vacío para que evaluarAlertaVenta avise
                     return {};
@@ -1698,6 +1336,66 @@
             }
 
             return result;
+        }
+
+        // ── Obra 1329-2: Venta desde VTA col F (Certificado con AP) mes a mes ──
+        // Total acumulado correcto = 2-TC C12:C16 (Gestión C+AEC, sin AxI)
+        // Distribución mensual: VTA col F (idx 5) proporcional al total de 2-TC C12:C16
+        function _venta_1329(workbook) {
+            const result = {};
+            try {
+                // Período del informe desde DMens B1
+                const sheetD = workbook.Sheets['DMens'];
+                if (!sheetD) return result;
+                const rowsD = XLSX.utils.sheet_to_json(sheetD, { header: 1, defval: null });
+                const periodoDate = parseFechaVTA(rowsD[0] && rowsD[0][1]);
+                if (!periodoDate) return result;
+
+                // Total acumulado correcto desde 2-TC C12:C16 (en millones)
+                const sheetTC = workbook.Sheets['2 - TC'];
+                if (!sheetTC) return result;
+                const tcRows = XLSX.utils.sheet_to_json(sheetTC, { header: 1, defval: null });
+                let totalTC = 0;
+                for (let r = 11; r <= 15; r++) {   // filas 12-16 (0-indexed 11-15), col C (idx 2)
+                    const v = parseFloat(tcRows[r] && tcRows[r][2]);
+                    if (!isNaN(v)) totalTC += v;
+                }
+                // totalTC está en millones de $
+
+                // Distribución mensual desde VTA col F (idx 5) = Certificado con AP (en $)
+                const sheetVTA = workbook.Sheets['VTA'];
+                if (!sheetVTA) return result;
+                const vtaRows = XLSX.utils.sheet_to_json(sheetVTA, { header: 1, defval: null });
+
+                const ventaMes = {};
+                let totalVTA = 0;
+
+                for (let r = 6; r < vtaRows.length; r++) {  // desde fila 7 (idx 6)
+                    const row = vtaRows[r];
+                    const dt = parseFechaVTA(row && row[1]);  // col B = Período
+                    if (!dt || dt.getUTCFullYear() < 1950) continue;
+                    if (dt.getUTCFullYear() > periodoDate.getUTCFullYear() ||
+                       (dt.getUTCFullYear() === periodoDate.getUTCFullYear() &&
+                        dt.getUTCMonth()    >  periodoDate.getUTCMonth())) continue;
+                    const f = parseFloat(row[5]);  // col F = Certificado con AP (en $)
+                    if (!isNaN(f) && f > 0) {
+                        const mesStr = dt.getUTCFullYear() + '-' + String(dt.getUTCMonth()+1).padStart(2,'0');
+                        ventaMes[mesStr] = (ventaMes[mesStr] || 0) + f;
+                        totalVTA += f;
+                    }
+                }
+
+                if (totalVTA === 0) return result;
+
+                // Escalar cada mes para que la suma == totalTC
+                const totalTCpesos = totalTC * 1000000;
+                const factor = totalTCpesos / totalVTA;
+                for (const mes of Object.keys(ventaMes)) {
+                    result[mes] = ventaMes[mes] * factor;
+                }
+
+                return result;
+            } catch(e) { console.error('[ICG] _venta_1329 error:', e); return {}; }
         }
 
         // Parser de fechas para el browser (XLSX.js entrega seriales numéricos)
